@@ -1,0 +1,60 @@
+#pragma once
+
+#include "../lib/raylib6/include/raylib.h"
+#include "enums.h"
+
+typedef struct
+{
+    Vector2 vertices[4];
+} OBBCollider;
+
+typedef struct
+{
+    Vector2 origin;
+    float width;
+    float height;
+    float rotation;
+    float rotationSpeed;
+
+    OBBCollider collider;
+
+    Vector2 gravityMultiplier;
+
+    int points_for_destruction;
+} PhysicsObject;
+
+typedef struct
+{
+    char text[256];
+    float originalFontSize;
+    float currentFontSize;
+    Color fontColor;
+    float rotation;
+    float rotationSpeed;
+} AnimatableText;
+
+typedef struct
+{
+    Vector2 origin;
+    Vector2 originalSize;
+    Vector2 currentSize;
+
+    float rotation;
+    float rotationSpeed;
+
+    Color color;
+
+    bool click;
+    bool hover;
+    bool hold;
+
+    AnimatableText btnText;
+} AnimatableButton;
+
+typedef struct
+{
+    bool locked;
+    int minPoints;
+    int highscore;
+    int phys_objs_to_throw;
+} Level;

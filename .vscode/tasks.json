@@ -1,0 +1,52 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Dev Build",
+            "type": "shell",
+                "command": "w64devkit\\bin\\windres.exe resources.rc -o resources.o && w64devkit\\bin\\gcc.exe *.c source/*.c screens/*.c resources.o -o \"${input:exeName}_dev.exe\" -I headers -I ./lib/raylib6/include -L ./lib/raylib6/lib -lraylib -lopengl32 -lgdi32 -lwinmm && \".\\${input:exeName}_dev.exe\"",
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "shell": {
+                    "executable": "cmd.exe",
+                    "args": [
+                        "/d",
+                        "/c"
+                    ]
+                }
+            },
+            "group": {
+                "kind": "build"
+            },
+            "presentation": {
+                "focus": true,
+                "panel": "shared",
+                //"clear": true
+            }
+        },
+        {
+            "label": "Release Build",
+            "type": "shell",
+            "command": "w64devkit\\bin\\windres.exe resources.rc -o resources.o && w64devkit\\bin\\gcc.exe *.c source/*.c screens/*.c resources.o -o \"${input:exeName}.exe\" -O2 -s -static -I headers -I ./lib/raylib6/include -L ./lib/raylib6/lib -lraylib -lopengl32 -lgdi32 -lwinmm -mwindows && \".\\${input:exeName}.exe\"",
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "shell": {
+                    "executable": "cmd.exe",
+                    "args": [
+                        "/d",
+                        "/c"
+                    ]
+                }
+            },
+            "group": "build"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "exeName",
+            "type": "promptString",
+            "description": "Choose a name for the resulting executable:",
+            "default": "game"
+        }
+    ]
+}
