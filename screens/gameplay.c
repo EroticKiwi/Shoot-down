@@ -1,14 +1,12 @@
 #include "gameplay.h"
-#include "../headers/level.h"
+#include "../headers/levels.h"
 #include "../utils/structs.h"
 
 bool has_initialized_level;
-Level loaded_level;
+Level level;
 
 void Initialize_Level(){
-    loaded_level = Get_Loaded_Level();
-
-
+    level = Get_Loaded_Level();
 }
 
 void Display_Gameplay_Screen(){
