@@ -25,6 +25,7 @@ typedef struct
 
 typedef struct
 {
+    Vector2 origin;
     char text[256];
     float originalFontSize;
     float currentFontSize;
@@ -58,3 +59,11 @@ typedef struct
     int highscore;
     int phys_objs_to_throw;
 } Level;
+
+typedef struct
+{
+    bool isDone;
+    float max_lifetime; /* Passed this amount the timer is considered done. Be careful of whether you update the timer by ticking up or ticking down!*/
+    float lifetime;
+    bool second_passed; /* Turns to true when a second has passed and stays true until explicitly reset in timer.h */
+} Timer;

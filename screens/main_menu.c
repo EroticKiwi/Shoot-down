@@ -52,12 +52,13 @@ void InitializeVariables()
         false,                                               // hold
         {
             /* AnimatableText */
-            "START",                  // text
-            ENDLESS_BUTTON_TEXT_SIZE, // originalFontSize
-            ENDLESS_BUTTON_TEXT_SIZE, // currentFontSize
-            BLACK,                    // fontColor
-            0.0f,                     // rot
-            0.0f                      // rot speed
+            (Vector2){START_BUTTON_POS.x, START_BUTTON_POS.y}, // originWARNING_CONTDOWN_POS
+            "START",                                           // text
+            ENDLESS_BUTTON_TEXT_SIZE,                          // originalFontSize
+            ENDLESS_BUTTON_TEXT_SIZE,                          // currentFontSize
+            BLACK,                                             // fontColor
+            0.0f,                                              // rot
+            0.0f                                               // rot speed
         }};
 
     AnimatableButton _endlessBtn = {
@@ -72,6 +73,7 @@ void InitializeVariables()
         false,                                                   // hold
         {
             /* AnimatableText */
+            (Vector2){0.0f, 0.0f},    // origin
             "ENDLESS MODE",           // text
             ENDLESS_BUTTON_TEXT_SIZE, // originalFontSize
             ENDLESS_BUTTON_TEXT_SIZE, // currentFontSize
@@ -79,6 +81,9 @@ void InitializeVariables()
             0.0f,                     // rot
             0.0f                      // rot speed
         }};
+
+    int x = LEVEL_BUTTON_STARTING_X;
+    int y = LEVEL_BUTTON_STARTING_Y;
 
     for (int i = 0; i < TOTAL_LEVELS; i++)
     {
@@ -98,7 +103,7 @@ void InitializeVariables()
         }
 
         AnimatableButton _level_button = {
-            (Vector2){0.0f, 0.0f},                               // origin
+            (Vector2){x, y},                                     // origin
             (Vector2){LEVEL_BUTTON_SIZE.x, LEVEL_BUTTON_SIZE.y}, // original size
             (Vector2){LEVEL_BUTTON_SIZE.x, LEVEL_BUTTON_SIZE.y}, // current size
             0.0f,                                                // rot
@@ -109,12 +114,13 @@ void InitializeVariables()
             false,                                               // hold
             {
                 /* AnimatableText */
-                "\0",  // text
-                18.0f, // originalFontSize
-                18.0f, // currentFontSize
-                BLACK, // fontColor
-                0.0f,  // rot
-                0.0f   // rot speed
+                (Vector2){x, y}, // origin
+                "\0",            // text
+                18.0f,           // originalFontSize
+                18.0f,           // currentFontSize
+                BLACK,           // fontColor
+                0.0f,            // rot
+                0.0f             // rot speed
             }};
 
         if (level.locked == false)
@@ -123,7 +129,20 @@ void InitializeVariables()
         }
 
         level_buttons[i] = _level_button;
+
+        if (i != 0 && (i + 1) % LEVEL_COLS == 0)
+        {
+            y += LEVEL_BUTTON_SIZE.y + 5.0f;
+            x = LEVEL_BUTTON_STARTING_X;
+        }
+        else
+        {
+            x += LEVEL_BUTTON_SIZE.x + 5.0f;
+        }
     }
+
+    _endlessBtn.origin = (Vector2){halfScreenW, y + (LEVEL_BUTTON_SIZE.y / 2.0f)};
+    _endlessBtn.btnText.origin = _endlessBtn.origin;
 
     startBtn = _startBtn;
     endlessBtn = _endlessBtn;
@@ -138,10 +157,13 @@ void Fetch_Level_Status()
     }
 }
 
-bool Has_Level_Been_Selected(){
-    
-    for(int i = 0; i < TOTAL_LEVELS; i++){
-        if(level_buttons[i].click){
+bool Has_Level_Been_Selected()
+{
+
+    for (int i = 0; i < TOTAL_LEVELS; i++)
+    {
+        if (level_buttons[i].click && !Is_Level_Locked(i))
+        {
             Load_Level(i);
             return true;
         }
@@ -150,7 +172,8 @@ bool Has_Level_Been_Selected(){
     return false;
 }
 
-void Load_Gameplay(GameScreen *current_game_screen){
+void Load_Gameplay(GameScreen *current_game_screen)
+{
     *current_game_screen = GAMEPLAY_SCREEN;
 }
 
@@ -175,32 +198,15 @@ void Show_LevelSelect()
 
     CreateText("LEVEL SELECT", LEVELSELECT_TITLE_SIZE, RED, LEVELSELECT_TITLE_POS.x, LEVELSELECT_TITLE_POS.y, 0, 0);
 
-    int x = LEVEL_BUTTON_STARTING_X;
-    int y = LEVEL_BUTTON_STARTING_Y;
-
     for (int i = 0; i < TOTAL_LEVELS; i++)
     {
-        level_buttons[i].origin = (Vector2){x, y};
-
         CreateButton_Rectangle(level_buttons[i].btnText.text, level_buttons[i].btnText.currentFontSize, level_buttons[i].btnText.fontColor, level_buttons[i].currentSize.x, level_buttons[i].currentSize.y, level_buttons[i].color, level_buttons[i].origin.x, level_buttons[i].origin.y, 0, 0, &level_buttons[i].click, &level_buttons[i].hover, &level_buttons[i].hold);
 
         if (level_buttons[i].btnText.text[0] == '\0')
         {
             CreateSprite_NoCollider(SPRITE_LOCKED, 16, 16, 0, level_buttons[i].origin.x, level_buttons[i].origin.y, WHITE, false);
         }
-
-        if (i != 0 && (i + 1) % LEVEL_COLS == 0)
-        {
-            y += LEVEL_BUTTON_SIZE.y + 5.0f;
-            x = LEVEL_BUTTON_STARTING_X;
-        }
-        else
-        {
-            x += LEVEL_BUTTON_SIZE.x + 5.0f;
-        }
     }
-
-    endlessBtn.origin = (Vector2){halfScreenW, y + (LEVEL_BUTTON_SIZE.y / 2.0f)};
 
     CreateButton_Rectangle(endlessBtn.btnText.text, endlessBtn.btnText.currentFontSize, endlessBtn.btnText.fontColor, endlessBtn.currentSize.x, endlessBtn.currentSize.y, endlessBtn.color, endlessBtn.origin.x, endlessBtn.origin.y, 0, 0, &endlessBtn.click, &endlessBtn.hover, &endlessBtn.hold);
 }
@@ -221,7 +227,9 @@ void Display_MainMenu(GameScreen *current_game_screen)
         if (!Has_Level_Been_Selected())
         {
             Show_LevelSelect();
-        } else {
+        }
+        else
+        {
             Load_Gameplay(current_game_screen);
         }
     }

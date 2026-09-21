@@ -32,10 +32,7 @@ typedef enum GameSprite{
 } GameSprite;
 
 typedef enum GameSound{
-    JUMP_SOUND,
-    NEWPLATFORM_SOUND,
-    OLDPLATFORM_SOUND,
-    LOSELIFE_SOUND
+    SOUND_BEEP
 } GameSound;
 
 typedef enum GameMusic{

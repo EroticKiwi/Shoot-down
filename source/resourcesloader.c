@@ -40,10 +40,7 @@ void UnloadGameMusic()
 
 void LoadGameSounds()
 {
-    gameSounds[JUMP_SOUND] = LoadSound("assets/sounds/jump_sound.wav");
-    gameSounds[NEWPLATFORM_SOUND] = LoadSound("assets/sounds/newplatform_sound.wav");
-    gameSounds[OLDPLATFORM_SOUND] = LoadSound("assets/sounds/oldplatform_sound.wav");
-    gameSounds[LOSELIFE_SOUND] = LoadSound("assets/sounds/loselife_sound.wav");
+    gameSounds[SOUND_BEEP] = LoadSound("assets/sfx/beep.wav");
     LoadGameMusic();
 }
 

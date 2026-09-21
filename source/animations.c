@@ -10,3 +10,16 @@ void PulsateAnimation_Btn(AnimatableButton *btn, float minWidth, float minHeight
 
     btn->btnText.currentFontSize = minFontSize + ((maxFontSize - minFontSize) * wave);
 }
+
+void ChangeSize_OverTime(AnimatableText *text, float targetSize, float speed){
+    
+    if(targetSize < 0){
+        printf("\n[animations.h] WARNING: targetSize CAN'T BE A NEGATIVE NUMBER!");
+        return;
+    }
+
+    text->currentFontSize -= GetFrameTime() * speed;
+    if(text->currentFontSize <= targetSize){
+        text->currentFontSize = targetSize;
+    }
+}
