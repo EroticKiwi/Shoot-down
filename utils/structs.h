@@ -58,14 +58,15 @@ typedef struct
     bool locked;
     int minPoints;
     int highscore;
-    int waves;
+    int waves; // lenght of the array down here
+    int *waves_starting_points; // array of ints, each int is the starting point of each wave in the PhysicsObjects array in gameplay.c
     int phys_objs_to_throw;
 
     Vector2 min_gravity_multiplier;
     Vector2 max_gravity_multiplier;
     Vector2 min_spawn_pos;
     Vector2 max_spawn_pos;
-    
+
 } Level;
 
 typedef struct

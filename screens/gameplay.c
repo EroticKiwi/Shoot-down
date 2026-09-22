@@ -32,6 +32,36 @@ Timer timer;
 PhysicsObject *objs;
 int obj_length;
 
+int current_wave;
+
+void Activate_Wave(PhysicsObject *objs, int obj_length, int wave_to_activate)
+{
+
+    if (wave_to_activate >= level.waves)
+    {
+        return;
+    }
+
+    int start = level.waves_starting_points[wave_to_activate];
+    int stop;
+
+    if (wave_to_activate == level.waves - 1)
+    {
+        stop = obj_length;
+    }
+    else
+    {
+        stop = level.waves_starting_points[wave_to_activate + 1];
+    }
+
+    for (int i = start; i < stop; i++)
+    {
+        objs[i].active = true;
+    }
+
+    current_wave = wave_to_activate;
+}
+
 void Initialize_Level()
 {
     level = Get_Loaded_Level();
@@ -61,14 +91,18 @@ void Initialize_Level()
 
     Vector2 origin;
     Vector2 gravity_multiplier;
+    bool isActive;
 
     // 2. Cycle and assign
     for (int i = 0; i < level.phys_objs_to_throw; i++)
     {
         origin = (Vector2){RandomNumberInRange_Inclusive(level.min_spawn_pos.x, level.max_spawn_pos.x), RandomNumberInRange_Inclusive(level.min_spawn_pos.y, level.max_spawn_pos.y)};
         gravity_multiplier = (Vector2){RandomNumberInRange_Inclusive(level.min_gravity_multiplier.x, level.max_gravity_multiplier.x), RandomNumberInRange_Inclusive(level.min_gravity_multiplier.y, level.max_gravity_multiplier.y)};
-        InitializePhysicsObject(&objs[i], origin, CRATE_WIDTH, CRATE_HEIGHT, 0.0f, RandomNumberInRange_Inclusive(MIN_ROTATION, MAX_ROTATION), gravity_multiplier);
+
+        InitializePhysicsObject(&objs[i], origin, CRATE_WIDTH, CRATE_HEIGHT, 0.0f, RandomNumberInRange_Inclusive(MIN_ROTATION, MAX_ROTATION), gravity_multiplier, false);
     }
+
+    Activate_Wave(objs, level.phys_objs_to_throw, 0);
 
     has_initialized_level = true;
 }
@@ -96,11 +130,46 @@ void ShowWarning()
 
 void UpdateCrates()
 {
-    for (int i = 0; i < obj_length; i++)
+    int amount_of_inactive_objs = 0;
+
+    int start = level.waves_starting_points[current_wave];
+    int stop;
+
+    if(current_wave + 1 >= level.waves){
+        stop = level.phys_objs_to_throw;
+    } else {
+        stop = level.waves_starting_points[current_wave+1];
+    }
+
+    for (int i = start; i < stop; i++) // optimize here by starting from correct wave_starting_point!
     {
-        if(!objs[i].active || objs[i].origin.y > screenH + objs[i].width || objs[i].origin.x > screenW + objs[i].width){ continue; }
+        if (!objs[i].active)
+        {
+            amount_of_inactive_objs++;
+            continue;
+        }
+
         objs[i].origin = ApplyGravity(objs[i].origin, &objs[i].gravityMultiplier);
+        objs[i].rotation = ApplyRotation(objs[i].rotation, objs[i].rotationSpeed);
+
         CreateSprite_NoCollider(SPRITE_BOX, objs[i].width, objs[i].height, objs[i].rotation, objs[i].origin.x, objs[i].origin.y, WHITE, false);
+        if (objs[i].origin.y > screenH + objs[i].width || objs[i].origin.x > screenW + objs[i].width)
+        {
+            objs[i].active = false;
+        }
+    }
+
+    if (current_wave == level.waves - 1)
+    {
+        if (amount_of_inactive_objs == level.phys_objs_to_throw - level.waves_starting_points[current_wave])
+        {
+            printf("\nEND!\n");
+        }
+    }
+
+    if (amount_of_inactive_objs == level.waves_starting_points[current_wave + 1])
+    {
+        Activate_Wave(objs, obj_length, current_wave + 1);
     }
 
     // CreateTextFromInt(GetFPS(), 24, RED, halfScreenW, 100, 0, 0);

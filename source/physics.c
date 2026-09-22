@@ -14,7 +14,7 @@ void ApplyGravity_Y(float *posX, float *posY, float *gravityMultiplier)
     }
 }
 
-void UpdateGravityMultiplier(Vector2* gravityMultiplier)
+void UpdateGravityMultiplier(Vector2 *gravityMultiplier)
 {
     if (gravityMultiplier->x < 0)
     {
@@ -34,6 +34,12 @@ void UpdateGravityMultiplier(Vector2* gravityMultiplier)
     }
 
     gravityMultiplier->y -= GRAVITY_MULTIPLIER_DECREASE_PER_FRAME; /* Could cause problems when unlocking FPS */
+}
+
+float ApplyRotation(float current_rotation, float rotation_speed)
+{
+    current_rotation += rotation_speed * GetFrameTime();
+    return current_rotation;
 }
 
 Vector2 ApplyGravity(Vector2 currentPosition, Vector2 *gravityMultiplier)

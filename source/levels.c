@@ -1,6 +1,7 @@
 #include "../headers/levels.h"
 #include "../headers/misc.h"
 #include "../headers/screen.h"
+#include "../headers/memory_management.h"
 
 #include <stdio.h>
 
@@ -8,7 +9,7 @@ Level levels[TOTAL_LEVELS];
 bool hasInitializedLevels = false;
 int loaded_level;
 
-void Create_Level(Level *level, Vector2 min_gravity_multiplier, Vector2 max_gravity_multiplier, Vector2 min_spawn_pos, Vector2 max_spawn_pos, int min_points, int waves, int phys_objs_to_throw)
+void Create_Level(Level *level, Vector2 min_gravity_multiplier, Vector2 max_gravity_multiplier, Vector2 min_spawn_pos, Vector2 max_spawn_pos, int min_points, int waves, int *waves_starting_points, int phys_objs_to_throw)
 {
     level->minPoints = min_points;
     level->min_gravity_multiplier = min_gravity_multiplier;
@@ -16,6 +17,7 @@ void Create_Level(Level *level, Vector2 min_gravity_multiplier, Vector2 max_grav
     level->min_spawn_pos = min_spawn_pos;
     level->max_spawn_pos = max_spawn_pos;
     level->waves = waves;
+    level->waves_starting_points = waves_starting_points;
     level->phys_objs_to_throw = phys_objs_to_throw;
 }
 
@@ -31,6 +33,8 @@ void Initialize_SingleLevel(Level *level, int index)
     Vector2 min_spawn_pos;
     Vector2 max_spawn_pos;
     int minPoints;
+    int waves;
+    int *waves_starting_points;
     int phys_objs_to_throw;
 
     switch (index)
@@ -42,7 +46,14 @@ void Initialize_SingleLevel(Level *level, int index)
         max_spawn_pos = (Vector2){50.0f, screenH};
         minPoints = 125;
         phys_objs_to_throw = (int)(minPoints / POINTS_FOR_CRATES_DESTRUCTION) + 1 + RandomNumberInRange_Inclusive(3, 6);
-        Create_Level(level, min_gravity_multiplier, max_gravity_multiplier, min_spawn_pos, max_spawn_pos, minPoints, 2, phys_objs_to_throw);
+
+        waves = 2;
+        waves_starting_points = Memory_Create(waves_starting_points, waves, sizeof(int));
+
+        waves_starting_points[0] = 0;
+        waves_starting_points[1] = phys_objs_to_throw / 2 - 1;
+
+        Create_Level(level, min_gravity_multiplier, max_gravity_multiplier, min_spawn_pos, max_spawn_pos, minPoints, waves, waves_starting_points, phys_objs_to_throw);
         break;
     }
 }

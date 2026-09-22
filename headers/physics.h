@@ -1,5 +1,6 @@
 #pragma once
 #include "screen.h"
+#include "../utils/structs.h"
 
 #define GRAVITY 9.81
 #define GRAVITY_MULTIPLIER_DECREASE_PER_FRAME 3.0f
@@ -7,4 +8,5 @@
 
 /* Returns new position, and updates gravityMultiplier through pointer to Vector2 in parameters */
 Vector2 ApplyGravity(Vector2 currentPosition, Vector2 *gravityMultiplier);
+float ApplyRotation(float current_rotation, float rotation_speed);
 void ResetGravity(float *gravityMultiplier);

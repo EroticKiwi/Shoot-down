@@ -8,8 +8,8 @@
 
 #define CRATE_WIDTH 50
 #define CRATE_HEIGHT 50
-#define MIN_ROTATION 0
-#define MAX_ROTATION 359
+#define MIN_ROTATION -360
+#define MAX_ROTATION 360
 
 void Initialize_AllLevels();
 bool Is_Level_Locked(int index);
