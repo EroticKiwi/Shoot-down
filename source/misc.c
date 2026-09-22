@@ -19,6 +19,7 @@ int RandomNumberInRange_Inclusive(int min, int max)
 
 void InitializePhysicsObject(PhysicsObject *object, Vector2 origin, float width, float height, float rotation, float rotationSpeed, Vector2 gravityMultiplier)
 {
+    object->active = true;
     object->origin = origin;
     object->width = width;
     object->height = height;

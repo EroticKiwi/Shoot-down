@@ -4,7 +4,7 @@
         {
             "label": "Dev Build",
             "type": "shell",
-                "command": "w64devkit\\bin\\windres.exe resources.rc -o resources.o && w64devkit\\bin\\gcc.exe *.c source/*.c screens/*.c resources.o -o \"${input:exeName}_dev.exe\" -I headers -I ./lib/raylib6/include -L ./lib/raylib6/lib -lraylib -lopengl32 -lgdi32 -lwinmm && \".\\${input:exeName}_dev.exe\"",
+                "command": "w64devkit\\bin\\windres.exe resources.rc -o resources.o && w64devkit\\bin\\gcc.exe *.c source/*.c screens/*.c resources.o -o \"${input:exeName}_dev.exe\" -I headers -I ./lib/raylib6/include -L ./lib/raylib6/lib -O2 -lraylib -lopengl32 -lgdi32 -lwinmm && \".\\${input:exeName}_dev.exe\"",
             "options": {
                 "cwd": "${workspaceFolder}",
                 "shell": {

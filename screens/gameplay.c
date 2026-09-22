@@ -6,6 +6,9 @@
 #include "../headers/timer.h"
 #include "../headers/animations.h"
 #include "../headers/sound.h"
+#include "../headers/memory_management.h"
+#include "../headers/misc.h"
+#include "../headers/physics.h"
 
 #define PREPARE_TIME 5.0f
 
@@ -25,6 +28,9 @@ bool ready_to_play = false;
 
 AnimatableText warning_time_txt;
 Timer timer;
+
+PhysicsObject *objs;
+int obj_length;
 
 void Initialize_Level()
 {
@@ -47,6 +53,22 @@ void Initialize_Level()
 
     timer = _timer;
     warning_time_txt = _warning_time_txt;
+
+    obj_length = level.phys_objs_to_throw * 4;
+
+    // 1. Expand
+    objs = Memory_Create(objs, obj_length, sizeof(PhysicsObject));
+
+    Vector2 origin;
+    Vector2 gravity_multiplier;
+
+    // 2. Cycle and assign
+    for (int i = 0; i < level.phys_objs_to_throw; i++)
+    {
+        origin = (Vector2){RandomNumberInRange_Inclusive(level.min_spawn_pos.x, level.max_spawn_pos.x), RandomNumberInRange_Inclusive(level.min_spawn_pos.y, level.max_spawn_pos.y)};
+        gravity_multiplier = (Vector2){RandomNumberInRange_Inclusive(level.min_gravity_multiplier.x, level.max_gravity_multiplier.x), RandomNumberInRange_Inclusive(level.min_gravity_multiplier.y, level.max_gravity_multiplier.y)};
+        InitializePhysicsObject(&objs[i], origin, CRATE_WIDTH, CRATE_HEIGHT, 0.0f, RandomNumberInRange_Inclusive(MIN_ROTATION, MAX_ROTATION), gravity_multiplier);
+    }
 
     has_initialized_level = true;
 }
@@ -74,6 +96,14 @@ void ShowWarning()
 
 void UpdateCrates()
 {
+    for (int i = 0; i < obj_length; i++)
+    {
+        if(!objs[i].active || objs[i].origin.y > screenH + objs[i].width || objs[i].origin.x > screenW + objs[i].width){ continue; }
+        objs[i].origin = ApplyGravity(objs[i].origin, &objs[i].gravityMultiplier);
+        CreateSprite_NoCollider(SPRITE_BOX, objs[i].width, objs[i].height, objs[i].rotation, objs[i].origin.x, objs[i].origin.y, WHITE, false);
+    }
+
+    // CreateTextFromInt(GetFPS(), 24, RED, halfScreenW, 100, 0, 0);
 }
 
 void Display_Gameplay_Screen()
