@@ -21,18 +21,51 @@
 #define WARNING_COUNTDOWN_SIZE 64
 #define WARNING_CONTDOWN_POS ((Vector2){halfScreenW, WARNING_TEXT2_POS.y + WARNING_COUNTDOWN_SIZE * 2.0f})
 
+#define OBTAINED_POINTS_POS ((Vector2){screenW - MeasureText(obtained_points.text, obtained_points.currentFontSize) * 1.5f, 25.0f})
+#define OBTAINED_POINTS_SIZE 22
+#define OBTAINED_POINTS_COLOR WHITE
+#define OBTAINED_POINTS_AMOUNT_POS ((Vector2){screenW - MeasureText(obtained_points.text, obtained_points.currentFontSize) / 1.5f, 25.0f})
+#define OBTAINED_POINTS_AMOUNT_SIZE 20
+#define OBTAINED_POINTS_AMOUNT_COLOR YELLOW
+
+#define END_TEXT_REQUIRED_TEXT "POINTS REQUIRED: "
+#define END_TEXT_REQUIRED_POS ((Vector2){halfScreenW - MeasureText(END_TEXT_REQUIRED_TEXT, END_TEXT_REQUIRED_SIZE) / 4, 200.0f})
+#define END_TEXT_REQUIRED_SIZE 32
+#define END_TEXT_REQUIRED_COLOR RED
+#define END_TEXT_REQUIRED_AMOUNT_POS ((Vector2){halfScreenW + MeasureText(END_TEXT_REQUIRED_TEXT, END_TEXT_REQUIRED_SIZE) / 2, 200.0f})
+#define END_TEXT_REQUIRED_AMOUNT_SIZE 28
+#define END_TEXT_REQUIRED_AMOUNT_COLOR BLUE
+
+#define END_TEXT_OBTAINED_TEXT "POINTS OBTAINED: "
+#define END_TEXT_OBTAINED_POS ((Vector2){halfScreenW - MeasureText(END_TEXT_OBTAINED_TEXT, END_TEXT_OBTAINED_SIZE) / 4, END_TEXT_REQUIRED_POS.y + 100.0f})
+#define END_TEXT_OBTAINED_SIZE 32
+#define END_TEXT_OBTAINED_COLOR RED
+#define END_TEXT_OBTAINED_AMOUNT_POS ((Vector2){halfScreenW + MeasureText(END_TEXT_OBTAINED_TEXT, END_TEXT_OBTAINED_SIZE) / 2, END_TEXT_REQUIRED_AMOUNT_POS.y + 100.0f})
+#define END_TEXT_OBTAINED_AMOUNT_SIZE 28
+#define END_TEXT_OBTAINED_AMOUNT_COLOR YELLOW
+
+typedef enum Gameplay_screen_info
+{
+    GAMEPLAY_WARNING,
+    GAMEPLAY_GAME,
+    GAMEPLAY_END
+} Gameplay_screen_info;
+
 bool has_initialized_level;
 Level level;
 
-bool ready_to_play = false;
+Gameplay_screen_info screen_info;
 
 AnimatableText warning_time_txt;
 Timer timer;
+
+AnimatableText obtained_points;
 
 PhysicsObject *objs;
 int obj_length;
 
 int current_wave;
+int current_score;
 
 void Activate_Wave(PhysicsObject *objs, int obj_length, int wave_to_activate)
 {
@@ -84,6 +117,18 @@ void Initialize_Level()
     timer = _timer;
     warning_time_txt = _warning_time_txt;
 
+    AnimatableText _obtained_points = {
+        OBTAINED_POINTS_POS,
+        "POINTS: ",
+        OBTAINED_POINTS_SIZE,
+        OBTAINED_POINTS_SIZE,
+        OBTAINED_POINTS_COLOR,
+        0.0f,
+        0.0f,
+    };
+
+    obtained_points = _obtained_points;
+
     obj_length = level.phys_objs_to_throw * 4;
 
     // 1. Expand
@@ -105,6 +150,8 @@ void Initialize_Level()
     Activate_Wave(objs, level.phys_objs_to_throw, 0);
 
     has_initialized_level = true;
+
+    //screen_info = GAMEPLAY_END;
 }
 
 void ShowWarning()
@@ -124,7 +171,7 @@ void ShowWarning()
 
     if (timer.isDone)
     {
-        ready_to_play = true;
+        screen_info = GAMEPLAY_GAME;
     }
 }
 
@@ -135,10 +182,13 @@ void UpdateCrates()
     int start = level.waves_starting_points[current_wave];
     int stop;
 
-    if(current_wave + 1 >= level.waves){
+    if (current_wave + 1 >= level.waves)
+    {
         stop = level.phys_objs_to_throw;
-    } else {
-        stop = level.waves_starting_points[current_wave+1];
+    }
+    else
+    {
+        stop = level.waves_starting_points[current_wave + 1];
     }
 
     for (int i = start; i < stop; i++) // optimize here by starting from correct wave_starting_point!
@@ -163,7 +213,8 @@ void UpdateCrates()
     {
         if (amount_of_inactive_objs == level.phys_objs_to_throw - level.waves_starting_points[current_wave])
         {
-            printf("\nEND!\n");
+            screen_info = GAMEPLAY_END;
+            return;
         }
     }
 
@@ -172,7 +223,19 @@ void UpdateCrates()
         Activate_Wave(objs, obj_length, current_wave + 1);
     }
 
+    CreateText(obtained_points.text, obtained_points.currentFontSize, obtained_points.fontColor, OBTAINED_POINTS_POS.x, OBTAINED_POINTS_POS.y, 0, 0);
+    CreateTextFromInt(current_score, OBTAINED_POINTS_AMOUNT_SIZE, OBTAINED_POINTS_AMOUNT_COLOR, OBTAINED_POINTS_AMOUNT_POS.x, OBTAINED_POINTS_AMOUNT_POS.y, 0, 0);
+
     // CreateTextFromInt(GetFPS(), 24, RED, halfScreenW, 100, 0, 0);
+}
+
+void ShowEnd()
+{
+    CreateText(END_TEXT_REQUIRED_TEXT, END_TEXT_REQUIRED_SIZE, END_TEXT_REQUIRED_COLOR, END_TEXT_REQUIRED_POS.x, END_TEXT_REQUIRED_POS.y, 0, 0);
+    CreateTextFromInt(level.minPoints, END_TEXT_REQUIRED_AMOUNT_SIZE, END_TEXT_REQUIRED_AMOUNT_COLOR, END_TEXT_REQUIRED_AMOUNT_POS.x, END_TEXT_REQUIRED_AMOUNT_POS.y, 0, 0);
+
+    CreateText(END_TEXT_OBTAINED_TEXT, END_TEXT_OBTAINED_SIZE, END_TEXT_OBTAINED_COLOR, END_TEXT_OBTAINED_POS.x, END_TEXT_OBTAINED_POS.y, 0, 0);
+    CreateTextFromInt(current_score, END_TEXT_OBTAINED_AMOUNT_SIZE, END_TEXT_OBTAINED_AMOUNT_COLOR, END_TEXT_OBTAINED_AMOUNT_POS.x, END_TEXT_OBTAINED_AMOUNT_POS.y, 0, 0);
 }
 
 void Display_Gameplay_Screen()
@@ -183,13 +246,16 @@ void Display_Gameplay_Screen()
         Initialize_Level();
     }
 
-    if (!ready_to_play)
+    switch (screen_info)
     {
+    case GAMEPLAY_WARNING:
         ShowWarning();
         UpdateTimer_Tickdown(&timer);
-    }
-    else
-    {
+        break;
+    case GAMEPLAY_GAME:
         UpdateCrates();
+        break;
+    case GAMEPLAY_END:
+        ShowEnd();
     }
 }
