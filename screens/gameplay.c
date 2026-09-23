@@ -9,6 +9,8 @@
 #include "../headers/memory_management.h"
 #include "../headers/misc.h"
 #include "../headers/physics.h"
+#include "../headers/colliders.h"
+#include "../headers/cutter.h"
 
 #define PREPARE_TIME 5.0f
 
@@ -63,6 +65,7 @@ AnimatableText obtained_points;
 
 PhysicsObject *objs;
 int obj_length;
+int last_occupied_slot;
 
 int current_wave;
 int current_score;
@@ -129,7 +132,7 @@ void Initialize_Level()
 
     obtained_points = _obtained_points;
 
-    obj_length = level.phys_objs_to_throw * 4;
+    obj_length = level.phys_objs_to_throw + (level.phys_objs_to_throw * 4);
 
     // 1. Expand
     objs = Memory_Create(objs, obj_length, sizeof(PhysicsObject));
@@ -147,11 +150,13 @@ void Initialize_Level()
         InitializePhysicsObject(&objs[i], origin, CRATE_WIDTH, CRATE_HEIGHT, 0.0f, RandomNumberInRange_Inclusive(MIN_ROTATION, MAX_ROTATION), gravity_multiplier, false);
     }
 
+    last_occupied_slot = level.phys_objs_to_throw - 1;
+
     Activate_Wave(objs, level.phys_objs_to_throw, 0);
 
     has_initialized_level = true;
 
-    //screen_info = GAMEPLAY_END;
+    screen_info = GAMEPLAY_GAME;
 }
 
 void ShowWarning()
@@ -175,23 +180,58 @@ void ShowWarning()
     }
 }
 
-void UpdateCrates()
+void MouseInput(PhysicsObject **objs)
 {
-    int amount_of_inactive_objs = 0;
 
-    int start = level.waves_starting_points[current_wave];
-    int stop;
+    Vector2 mousePos = GetMousePosition();
 
-    if (current_wave + 1 >= level.waves)
+    int collision_index = -1;
+    for (int i = 0; i <= last_occupied_slot; i++)
     {
-        stop = level.phys_objs_to_throw;
+        if (CheckMouseOverlap_Single(mousePos, (*objs)[i])) // objs[i] but pointing to the actual element
+        {
+            collision_index = i;
+            break;
+        }
+    }
+
+    if (collision_index == -1)
+    {
+        return;
+    }
+
+    /* Is there space for new objects? */
+    if (last_occupied_slot < obj_length - 5)
+    {
+        CutTo4Pieces((*objs)[collision_index], mousePos, *objs, last_occupied_slot + 1, true);
+        last_occupied_slot += 4;
+    }
+
+    if ((*objs)[collision_index].width == CRATE_WIDTH)
+    {
+        current_score += POINTS_FOR_CRATES_DESTRUCTION;
     }
     else
     {
-        stop = level.waves_starting_points[current_wave + 1];
+        current_score += POINTS_FOR_DEBRIS_DESTRUCTION;
     }
 
-    for (int i = start; i < stop; i++) // optimize here by starting from correct wave_starting_point!
+    (*objs)[collision_index].active = false;
+    (*objs)[collision_index].origin = (Vector2){9999.0f, 9999.0f};
+}
+
+void UpdateCrates()
+{
+
+    // Check Collision
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+    {
+        MouseInput(&objs);
+    }
+
+    int amount_of_inactive_objs = 0;
+
+    for (int i = level.waves_starting_points[current_wave]; i < obj_length; i++)
     {
         if (!objs[i].active)
         {
@@ -209,18 +249,22 @@ void UpdateCrates()
         }
     }
 
-    if (current_wave == level.waves - 1)
+    UpdateColliders(objs, obj_length);
+
+    int end = obj_length - level.waves_starting_points[current_wave];
+
+    if (amount_of_inactive_objs >= end)
     {
-        if (amount_of_inactive_objs == level.phys_objs_to_throw - level.waves_starting_points[current_wave])
+        printf("\nyes\n");
+        if (current_wave == level.waves - 1)
         {
             screen_info = GAMEPLAY_END;
             return;
         }
-    }
-
-    if (amount_of_inactive_objs == level.waves_starting_points[current_wave + 1])
-    {
-        Activate_Wave(objs, obj_length, current_wave + 1);
+        else
+        {
+            Activate_Wave(objs, obj_length, current_wave + 1);
+        }
     }
 
     CreateText(obtained_points.text, obtained_points.currentFontSize, obtained_points.fontColor, OBTAINED_POINTS_POS.x, OBTAINED_POINTS_POS.y, 0, 0);

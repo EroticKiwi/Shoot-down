@@ -11,4 +11,5 @@
 void UpdateCollider(PhysicsObject *obj);
 void UpdateColliders(PhysicsObject *objects, int objects_length);
 bool CheckCollision(PhysicsObject A, PhysicsObject B);
-int CheckMouseOverlap(Vector2 mousePosition, PhysicsObject *objects, int* collisionInfo, int objects_length);
+bool CheckMouseOverlap_Single(Vector2 mousePosition, PhysicsObject object);
+int CheckMouseOverlap_Multiple(Vector2 mousePosition, PhysicsObject *objects, int* collisionInfo, int objects_length);

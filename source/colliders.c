@@ -155,7 +155,15 @@ bool CheckMouseOverlap_Internal(Vector2 mousePosition, PhysicsObject obj)
     return true;
 }
 
-int CheckMouseOverlap(Vector2 mousePosition, PhysicsObject objects[], int *collisionInfo, int objects_length)
+bool CheckMouseOverlap_Single(Vector2 mousePosition, PhysicsObject object)
+{
+
+    bool collision_happened = CheckMouseOverlap_Internal(mousePosition, object);
+
+    return collision_happened;
+}
+
+int CheckMouseOverlap_Multiple(Vector2 mousePosition, PhysicsObject objects[], int *collisionInfo, int objects_length)
 {
     bool overlap = false;
     int collisionInfo_index = 0;
