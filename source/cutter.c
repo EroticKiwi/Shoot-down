@@ -7,6 +7,7 @@ void CutTo4Pieces(PhysicsObject originalObj, Vector2 mousePos, PhysicsObject *ar
     Vector2 newSize[2];
     Vector2 newOrigin;
     Vector2 newGravityMultiplier;
+    int rotation;
 
     PH1 = originalObj.origin.y - originalObj.height / 2;
     PH2 = originalObj.origin.y + originalObj.height / 2;
@@ -42,20 +43,24 @@ void CutTo4Pieces(PhysicsObject originalObj, Vector2 mousePos, PhysicsObject *ar
     /* Top-left */
     newOrigin = (Vector2){mousePos.x - newSize[0].x / 2, mousePos.y - newSize[0].y / 2};
     newGravityMultiplier = (Vector2){originalObj.gravityMultiplier.x - BLAST_FORCE, originalObj.gravityMultiplier.y + BLAST_FORCE};
-    InitializePhysicsObject(&arr[arr_starting_point], newOrigin, newSize[0].x, newSize[0].y, 0, 0, newGravityMultiplier, activate_new_phys_objects);
+    rotation = RandomNumberInRange_Inclusive(-360, 360);
+    InitializePhysicsObject(&arr[arr_starting_point], newOrigin, newSize[0].x, newSize[0].y, 0, rotation, newGravityMultiplier, activate_new_phys_objects);
 
     /* Top-right */
     newOrigin = (Vector2){mousePos.x + newSize[1].x / 2, mousePos.y - newSize[0].y / 2};
     newGravityMultiplier = (Vector2){originalObj.gravityMultiplier.x + BLAST_FORCE, originalObj.gravityMultiplier.y + BLAST_FORCE};
-    InitializePhysicsObject(&arr[arr_starting_point + 1], newOrigin, newSize[1].x, newSize[0].y, 0, 0, newGravityMultiplier, activate_new_phys_objects);
+    rotation = RandomNumberInRange_Inclusive(-360, 360);
+    InitializePhysicsObject(&arr[arr_starting_point + 1], newOrigin, newSize[1].x, newSize[0].y, 0, rotation, newGravityMultiplier, activate_new_phys_objects);
 
     /* Bottom-left */
     newOrigin = (Vector2){mousePos.x - newSize[0].x / 2, mousePos.y + newSize[1].y / 2};
     newGravityMultiplier = (Vector2){originalObj.gravityMultiplier.x - BLAST_FORCE, originalObj.gravityMultiplier.y - BLAST_FORCE};
-    InitializePhysicsObject(&arr[arr_starting_point + 2], newOrigin, newSize[0].x, newSize[1].y, 0, 0, newGravityMultiplier, activate_new_phys_objects);
+    rotation = RandomNumberInRange_Inclusive(-360, 360);
+    InitializePhysicsObject(&arr[arr_starting_point + 2], newOrigin, newSize[0].x, newSize[1].y, 0, rotation, newGravityMultiplier, activate_new_phys_objects);
 
     /* Bottom-right */
     newOrigin = (Vector2){mousePos.x + newSize[1].x / 2, mousePos.y + newSize[1].y / 2};
     newGravityMultiplier = (Vector2){originalObj.gravityMultiplier.x - BLAST_FORCE, originalObj.gravityMultiplier.y - BLAST_FORCE};
-    InitializePhysicsObject(&arr[arr_starting_point + 3], newOrigin, newSize[1].x, newSize[1].y, 0, 0, newGravityMultiplier, activate_new_phys_objects);
+    rotation = RandomNumberInRange_Inclusive(-360, 360);
+    InitializePhysicsObject(&arr[arr_starting_point + 3], newOrigin, newSize[1].x, newSize[1].y, 0, rotation, newGravityMultiplier, activate_new_phys_objects);
 }

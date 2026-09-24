@@ -242,7 +242,15 @@ void UpdateCrates()
         objs[i].origin = ApplyGravity(objs[i].origin, &objs[i].gravityMultiplier);
         objs[i].rotation = ApplyRotation(objs[i].rotation, objs[i].rotationSpeed);
 
-        CreateSprite_NoCollider(SPRITE_BOX, objs[i].width, objs[i].height, objs[i].rotation, objs[i].origin.x, objs[i].origin.y, WHITE, false);
+        if (objs[i].width == CRATE_WIDTH)
+        {
+            CreateSprite_NoCollider(SPRITE_BOX, objs[i].width, objs[i].height, objs[i].rotation, objs[i].origin.x, objs[i].origin.y, WHITE, false);
+        }
+        else
+        {
+            CreateSprite_NoCollider(SPRITE_BOX_PIECE, objs[i].width, objs[i].height, objs[i].rotation, objs[i].origin.x, objs[i].origin.y, WHITE, false);
+        }
+
         if (objs[i].origin.y > screenH + objs[i].width || objs[i].origin.x > screenW + objs[i].width)
         {
             objs[i].active = false;

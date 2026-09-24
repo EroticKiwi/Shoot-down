@@ -8,6 +8,7 @@ Music gameMusic[MAX_MUSIC];
 void LoadGameTextures()
 {
     gameSprites[SPRITE_BOX] = LoadTexture("assets/sprites/box.png");
+    gameSprites[SPRITE_BOX_PIECE] = LoadTexture("assets/sprites/box-piece.png");
     gameSprites[SPRITE_LOCKED] = LoadTexture("assets/sprites/locked.png");
     gameSprites[SPRITE_WARNING] = LoadTexture("assets/sprites/warning.png");
 }

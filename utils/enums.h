@@ -27,6 +27,7 @@ typedef enum GameTexture{
 
 typedef enum GameSprite{
     SPRITE_BOX,
+    SPRITE_BOX_PIECE,
     SPRITE_LOCKED,
     SPRITE_WARNING
 } GameSprite;
