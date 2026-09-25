@@ -37,6 +37,12 @@ typedef struct
 
 typedef struct
 {
+    AnimatableText text_component;
+    PhysicsObject physics_component;
+} PhysicsObject_Text;
+
+typedef struct
+{
     Vector2 origin;
     Vector2 originalSize;
     Vector2 currentSize;
@@ -58,7 +64,7 @@ typedef struct
     bool locked;
     int minPoints;
     int highscore;
-    int waves; // lenght of the array down here
+    int waves;                  // length of the array down here
     int *waves_starting_points; // array of ints, each int is the starting point of each wave in the PhysicsObjects array in gameplay.c
     int phys_objs_to_throw;
 

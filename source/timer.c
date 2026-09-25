@@ -35,12 +35,19 @@ void UpdateTimer_Tickup(Timer *timer)
         timer->second_passed = true;
 }
 
-bool isTimer_done(Timer *timer)
+bool Is_Timer_Done(Timer *timer)
 {
     return timer->isDone;
 }
 
 void Reset_seconds_passed(Timer *timer)
 {
+    timer->second_passed = false;
+}
+
+void Set_Timer(Timer *timer, float currentTime, float endTime){
+    timer->lifetime = currentTime;
+    timer->max_lifetime = endTime;
+    timer->isDone = false;
     timer->second_passed = false;
 }

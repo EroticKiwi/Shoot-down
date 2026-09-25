@@ -23,3 +23,22 @@ void ChangeSize_OverTime(AnimatableText *text, float targetSize, float speed){
         text->currentFontSize = targetSize;
     }
 }
+
+float Tweening(float value, float target, float speed){
+    
+    if(value < target){
+        value += GetFrameTime() * speed;
+        if(value >= target){
+            value = target;
+        }
+    }
+
+    if(value > target){
+        value -= GetFrameTime() * speed;
+        if(value <= target){
+            value = target;
+        }
+    }
+
+    return value;
+}

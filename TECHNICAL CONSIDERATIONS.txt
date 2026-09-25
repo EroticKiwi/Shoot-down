@@ -1,0 +1,13 @@
+[####] MEMORY AND EASE OF WRITING OVER COMPOSITION [####]
+Looking at the "architecture" I made with my structs and helpers, it is clear just how valuable composition can be in such a context as this one.
+For example I have a PhysicsObject - an object affected by physics and that has a collider (an OBB collider with a number of vertices).
+This works great for my purposes but say however that I aim to have an object that is affected by physics and yet has no collider, floating text perhaps.
+I have a struct for text - AnimatableText - and I could create another struct that holds an AnimatableText and a PhysicsObject and in doing so I could use the PhysicsObject for the position affected by gravity and the AnimatableText for the text-related things I want to do.
+This is precisely what I have done.
+
+However a PhysicsObject holds a lot of fields that are related to collision checking, one of them is a struct for the OBB collider.
+The base use case for my floating texts does not necessitate a collider, this means that my architecture wastes precious memory for no good reason.
+
+By the time I made this realization I was roughly near the end of the project, the part related to gameplay at least.
+Changing it then would have had a big impact on what I had already done and I'd have had to spend an amount of time refactoring code that I could have spent on finishing this little playground project, so I decided to keep my architecture the way it was in favor of faster development time.
+Mind you this is a project that I would never have to come back to - no after release maintenence needed whatsoever - so I could afford a codebase with these "imperfections" since I wouldn't have had to work on it anymore after it was done.
