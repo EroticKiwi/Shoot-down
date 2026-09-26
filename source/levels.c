@@ -2,12 +2,14 @@
 #include "../headers/misc.h"
 #include "../headers/screen.h"
 #include "../headers/memory_management.h"
+#include "../headers/persistence.h"
 
 #include <stdio.h>
 
 Level levels[TOTAL_LEVELS];
 bool hasInitializedLevels = false;
-int loaded_level;
+int loaded_level = 0;
+int max_level_reached = 0;
 
 void Create_Level(Level *level, Vector2 min_gravity_multiplier, Vector2 max_gravity_multiplier, Vector2 min_spawn_pos, Vector2 max_spawn_pos, int min_points, int waves, int *waves_starting_points, int phys_objs_to_throw)
 {
@@ -23,9 +25,15 @@ void Create_Level(Level *level, Vector2 min_gravity_multiplier, Vector2 max_grav
 
 void Initialize_SingleLevel(Level *level, int index)
 {
-    /* Check with persistence! */
-    level->locked = true; // check with memory persistence
-    level->highscore = 0; // check with memory persistence
+    if (index <= max_level_reached)
+    {
+        levels[index].locked = false;
+    }
+    else
+    {
+        levels[index].locked = true;
+    }
+
     //-------
 
     Vector2 min_gravity_multiplier;
@@ -48,7 +56,7 @@ void Initialize_SingleLevel(Level *level, int index)
         phys_objs_to_throw = (int)(minPoints / POINTS_FOR_CRATES_DESTRUCTION) + 1 + RandomNumberInRange_Inclusive(3, 6);
 
         waves = 2;
-        waves_starting_points = Memory_Create(waves_starting_points, waves, sizeof(int));
+        waves_starting_points = Memory_Resize(waves_starting_points, waves, sizeof(int));
 
         waves_starting_points[0] = 0;
         waves_starting_points[1] = phys_objs_to_throw / 2 - 1;
@@ -59,8 +67,9 @@ void Initialize_SingleLevel(Level *level, int index)
 }
 
 void Initialize_AllLevels()
-
 {
+
+    LoadData_FromFile(&max_level_reached, levels, TOTAL_LEVELS);
 
     for (int i = 0; i < TOTAL_LEVELS; i++)
     {
@@ -110,7 +119,62 @@ Level Get_Loaded_Level()
     return levels[loaded_level];
 }
 
+int Get_Loaded_Level_Index()
+{
+    return loaded_level;
+}
+
 void Load_Level(int index)
 {
     loaded_level = index;
+}
+
+bool Is_There_A_Next_Level()
+{
+    if (loaded_level >= TOTAL_LEVELS)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+void Reset_Loaded_Level()
+{
+    loaded_level = 0;
+}
+
+int Get_Max_Level_Reached()
+{
+    return max_level_reached;
+}
+
+void Set_Highscore(int newhighscore)
+{
+    if (newhighscore > levels[loaded_level].highscore)
+    {
+        levels[loaded_level].highscore = newhighscore;
+    }
+}
+
+void Save_Levels_Data()
+{
+    int max_level = max_level_reached;
+
+    if (loaded_level == max_level_reached)
+    {
+        max_level += 1;
+    }
+
+    if (max_level < TOTAL_LEVELS - 1)
+    {
+        levels[max_level].locked = false;
+    }
+
+    SaveData_ToFile(max_level, levels);
+}
+
+void Reload_Level_Data()
+{
+    LoadData_FromFile(&max_level_reached, levels, TOTAL_LEVELS);
 }

@@ -25,7 +25,7 @@ void DisplayScreen(GameScreen *current_game_screen)
         Display_MainMenu(current_game_screen);
         break;
     case GAMEPLAY_SCREEN:
-        Display_Gameplay_Screen();
+        Display_Gameplay_Screen(current_game_screen);
         break;
     }
 }

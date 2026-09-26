@@ -30,6 +30,13 @@
 #define OBTAINED_POINTS_AMOUNT_SIZE 20
 #define OBTAINED_POINTS_AMOUNT_COLOR YELLOW
 
+#define END_TEXT_LEVEL_PASSED_TEXT "LEVEL PASSED!"
+#define END_TEXT_LEVEL_PASSED_TEXT_COLOR YELLOW
+#define END_TEXT_LEVEL_NOT_PASSED_TEXT "LEVEL NOT PASSED!"
+#define END_TEXT_LEVEL_NOT_PASSED_TEXT_COLOR RED
+#define END_TEXT_LEVEL_SIZE 24
+#define END_TEXT_LEVEL_POS ((Vector2){halfScreenW, 100.0f})
+
 #define END_TEXT_REQUIRED_TEXT "POINTS REQUIRED: "
 #define END_TEXT_REQUIRED_POS ((Vector2){halfScreenW - MeasureText(END_TEXT_REQUIRED_TEXT, END_TEXT_REQUIRED_SIZE) / 4, 200.0f})
 #define END_TEXT_REQUIRED_SIZE 32
@@ -120,6 +127,7 @@ int score_count_animation;
 int highscore_count_animation;
 
 /* bools */
+bool end_text_0_appeared;
 bool end_text_1_appeared;
 bool end_text_2_appeared;
 bool end_text_3_appeared;
@@ -131,6 +139,26 @@ bool new_highscore;
 bool nextlevel_trigger;
 bool tryagain_trigger;
 bool levelselect_trigger;
+
+/*
+    TWO ARRAYS OF STRUCT IN HEAP:
+        - OBJS (PhysicsObjects)
+        - SCORE_TEXT (PhysicsObjects_Text)
+*/
+
+void Reset_Gameplay()
+{
+    /* bools */
+    end_text_1_appeared = false;
+    end_text_2_appeared = false;
+    end_text_3_appeared = false;
+    end_text_3_completed = false;
+    end_buttons_appeared = false;
+    new_highscore = false;
+    screen_info = GAMEPLAY_WARNING;
+
+    has_initialized_level = false;
+}
 
 void Activate_Wave(PhysicsObject *objs, int obj_length, int wave_to_activate)
 {
@@ -198,7 +226,7 @@ void Initialize_Level()
     obj_length = level.phys_objs_to_throw + (level.phys_objs_to_throw * 4);
 
     // 1. Expand
-    objs = Memory_Create(objs, obj_length, sizeof(PhysicsObject));
+    objs = Memory_Resize(objs, obj_length, sizeof(PhysicsObject)); // acts as memory_create as well!
 
     Vector2 origin;
     Vector2 gravity_multiplier;
@@ -217,7 +245,8 @@ void Initialize_Level()
 
     Activate_Wave(objs, level.phys_objs_to_throw, 0);
 
-    score_text = Memory_Create(score_text, level.phys_objs_to_throw * 1.5f, sizeof(PhysicsObject_Text));
+    score_text = Memory_Resize(score_text, level.phys_objs_to_throw * 1.5f, sizeof(PhysicsObject_Text)); // acts as memory_create as well!
+
     score_text_length = level.phys_objs_to_throw * 1.5f;
 
     for (int i = 0; i < score_text_length; i++)
@@ -239,13 +268,19 @@ void Initialize_Level()
 
     has_initialized_level = true;
 
-    screen_info = GAMEPLAY_GAME;
+    current_score = 0;
 }
 
 void EndLevel()
 {
     screen_info = GAMEPLAY_END;
     Set_Timer(&timer, 1.0f, 0.0f);
+
+    Set_Highscore(current_score);
+    if (current_score >= level.minPoints)
+    {
+        Save_Levels_Data();
+    }
 }
 
 void ShowWarning()
@@ -447,8 +482,29 @@ void UpdateCrates()
     // CreateTextFromInt(GetFPS(), 24, RED, halfScreenW, 100, 0, 0);
 }
 
-void ShowEnd()
+void ShowEnd(GameScreen *current_game_screen)
 {
+
+    if (!end_text_0_appeared)
+    {
+        UpdateTimer_Tickdown(&timer);
+        if (Is_Timer_Done(&timer))
+        {
+            end_text_0_appeared = true;
+            Set_Timer(&timer, END_WAIT_TIME, 0.0f);
+        }
+        return;
+    }
+
+    if (current_score >= level.minPoints)
+    {
+        CreateText(END_TEXT_LEVEL_PASSED_TEXT, END_TEXT_LEVEL_SIZE, END_TEXT_LEVEL_PASSED_TEXT_COLOR, END_TEXT_LEVEL_POS.x, END_TEXT_LEVEL_POS.y, 0, 0);
+    }
+    else
+    {
+        CreateText(END_TEXT_LEVEL_NOT_PASSED_TEXT, END_TEXT_LEVEL_SIZE, END_TEXT_LEVEL_NOT_PASSED_TEXT_COLOR, END_TEXT_LEVEL_POS.x, END_TEXT_LEVEL_POS.y, 0, 0);
+    }
+
     if (!end_text_1_appeared)
     {
         UpdateTimer_Tickdown(&timer);
@@ -486,7 +542,7 @@ void ShowEnd()
         {
             return;
         }
-        score_count_animation+=2;
+        score_count_animation += 2;
         if (score_count_animation >= current_score)
         {
             score_count_animation = current_score;
@@ -515,13 +571,12 @@ void ShowEnd()
         {
             if (highscore_count_animation < current_score)
             {
-                highscore_count_animation+=2;
+                highscore_count_animation += 2;
                 if (highscore_count_animation >= current_score)
                 {
                     highscore_count_animation = current_score;
                     if (current_score > level.highscore)
                     {
-                        level.highscore = current_score;
                         new_highscore = true;
                     }
                     Set_Timer(&timer, END_WAIT_TIME, 0.0f);
@@ -538,7 +593,7 @@ void ShowEnd()
         {
             if (highscore_count_animation < level.highscore)
             {
-                highscore_count_animation+=2;
+                highscore_count_animation += 2;
                 if (highscore_count_animation >= level.highscore)
                 {
                     highscore_count_animation = level.highscore;
@@ -573,16 +628,23 @@ void ShowEnd()
     {
         CreateButton_Rectangle(END_BUTTON_NEXT_LEVEL_TEXT, END_BUTTON_NEXT_LEVEL_TEXT_SIZE, END_BUTTON_NEXT_LEVEL_TEXT_COLOR, END_BUTTON_NEXT_LEVEL_SIZE.x, END_BUTTON_NEXT_LEVEL_SIZE.y, GRAY, END_BUTTON_NEXT_LEVEL_POS.x, END_BUTTON_NEXT_LEVEL_POS.y, 0, 0, NULL, NULL, NULL);
     }
-    else
+    else if (Is_There_A_Next_Level())
     {
         CreateButton_Rectangle(END_BUTTON_NEXT_LEVEL_TEXT, END_BUTTON_NEXT_LEVEL_TEXT_SIZE, END_BUTTON_NEXT_LEVEL_TEXT_COLOR, END_BUTTON_NEXT_LEVEL_SIZE.x, END_BUTTON_NEXT_LEVEL_SIZE.y, END_BUTTON_NEXT_LEVEL_COLOR, END_BUTTON_NEXT_LEVEL_POS.x, END_BUTTON_NEXT_LEVEL_POS.y, 0, 0, &nextlevel_trigger, NULL, NULL);
     }
 
     CreateButton_Rectangle(END_BUTTON_TRY_AGAIN_TEXT, END_BUTTON_TRY_AGAIN_TEXT_SIZE, END_BUTTON_TRY_AGAIN_TEXT_COLOR, END_BUTTON_TRY_AGAIN_SIZE.x, END_BUTTON_TRY_AGAIN_SIZE.y, END_BUTTON_TRY_AGAIN_COLOR, END_BUTTON_TRY_AGAIN_POS.x, END_BUTTON_TRY_AGAIN_POS.y, 0, 0, &tryagain_trigger, NULL, NULL);
     CreateButton_Rectangle(END_BUTTON_LEVEL_SELECT_TEXT, END_BUTTON_LEVEL_SELECT_TEXT_SIZE, END_BUTTON_LEVEL_SELECT_TEXT_COLOR, END_BUTTON_LEVEL_SELECT_SIZE.x, END_BUTTON_LEVEL_SELECT_SIZE.y, END_BUTTON_LEVEL_SELECT_COLOR, END_BUTTON_LEVEL_SELECT_POS.x, END_BUTTON_LEVEL_SELECT_POS.y, 0, 0, &levelselect_trigger, NULL, NULL);
+
+    if (levelselect_trigger)
+    {
+        *current_game_screen = MAIN_MENU_SCREEN;
+        Reset_Gameplay();
+        return;
+    }
 }
 
-void Display_Gameplay_Screen()
+void Display_Gameplay_Screen(GameScreen *current_game_screen)
 {
     if (!has_initialized_level)
     {
@@ -599,6 +661,6 @@ void Display_Gameplay_Screen()
         UpdateCrates();
         break;
     case GAMEPLAY_END:
-        ShowEnd();
+        ShowEnd(current_game_screen);
     }
 }
