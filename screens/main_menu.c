@@ -196,6 +196,11 @@ void Show_LevelSelect()
             CreateSprite_NoCollider(SPRITE_LOCKED, 16, 16, 0, level_buttons[i].origin.x, level_buttons[i].origin.y, WHITE, false);
         }
     }
+
+    if (Get_Max_Level_Reached() == TOTAL_LEVELS)
+    {
+        CreateText("YOU FINISHED THE GAME, CONGRATS!", 24, GREEN, halfScreenW, level_buttons[TOTAL_LEVELS - 1].origin.y + 60.0f, 0, 0);
+    }
 }
 
 void Display_MainMenu(GameScreen *current_game_screen)

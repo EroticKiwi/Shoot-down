@@ -32,7 +32,7 @@ void *Memory_Expand(void *arr, int length, int amount, size_t size_of_array_cont
     }
 
     int new_length = length + amount;
-    int newSize = new_length * size_of_array_content;
+    size_t newSize = new_length * size_of_array_content;
 
     void *newArr = realloc(arr, newSize);
 
@@ -56,7 +56,7 @@ void *Memory_Shrink(void *arr, int length, int amount, size_t size_of_array_cont
     }
 
     int new_length = length - amount;
-    int newSize = new_length * size_of_array_content;
+    size_t newSize = new_length * size_of_array_content;
 
     void *newArr = realloc(arr, newSize);
 
@@ -73,14 +73,16 @@ void *Memory_Shrink(void *arr, int length, int amount, size_t size_of_array_cont
 
 void *Memory_Resize(void *arr, int desired_length, size_t size_of_array_content)
 {
+
     if (desired_length <= 0)
     {
         printf("\nMEMORY ERROR: Couldn't allocate space for new array! RETURNING OLD ARRAY!\n");
+
         return arr;
     }
 
-    int new_length = desired_length * size_of_array_content;
-    void *newArr = realloc(arr , new_length);
+    size_t new_length = desired_length * size_of_array_content;
+    void *newArr = realloc(arr, new_length);
     if (newArr == NULL)
     {
         printf("\nMEMORY ERROR: Couldn't allocate space for new array! RETURNING OLD ARRAY!\n");

@@ -223,7 +223,7 @@ void Initialize_Level()
 
     obtained_points = _obtained_points;
 
-    obj_length = level.phys_objs_to_throw + (level.phys_objs_to_throw * 4);
+    obj_length = level.phys_objs_to_throw + (level.phys_objs_to_throw * 8); // it's a lot of space, I know
 
     // 1. Expand
     objs = Memory_Resize(objs, obj_length, sizeof(PhysicsObject)); // acts as memory_create as well!
@@ -450,7 +450,7 @@ void UpdateCrates()
             CreateSprite_NoCollider(SPRITE_BOX_PIECE, objs[i].width, objs[i].height, objs[i].rotation, objs[i].origin.x, objs[i].origin.y, WHITE, false);
         }
 
-        if (objs[i].origin.y > screenH + objs[i].width || objs[i].origin.x > screenW + objs[i].width)
+        if (objs[i].origin.y > screenH + objs[i].width || objs[i].origin.y < -objs[i].height || objs[i].origin.x > screenW + objs[i].width || objs[i].origin.x < -objs[i].width)
         {
             objs[i].active = false;
         }
@@ -628,9 +628,14 @@ void ShowEnd(GameScreen *current_game_screen)
     {
         CreateButton_Rectangle(END_BUTTON_NEXT_LEVEL_TEXT, END_BUTTON_NEXT_LEVEL_TEXT_SIZE, END_BUTTON_NEXT_LEVEL_TEXT_COLOR, END_BUTTON_NEXT_LEVEL_SIZE.x, END_BUTTON_NEXT_LEVEL_SIZE.y, GRAY, END_BUTTON_NEXT_LEVEL_POS.x, END_BUTTON_NEXT_LEVEL_POS.y, 0, 0, NULL, NULL, NULL);
     }
-    else if (Is_There_A_Next_Level())
+    else
     {
-        CreateButton_Rectangle(END_BUTTON_NEXT_LEVEL_TEXT, END_BUTTON_NEXT_LEVEL_TEXT_SIZE, END_BUTTON_NEXT_LEVEL_TEXT_COLOR, END_BUTTON_NEXT_LEVEL_SIZE.x, END_BUTTON_NEXT_LEVEL_SIZE.y, END_BUTTON_NEXT_LEVEL_COLOR, END_BUTTON_NEXT_LEVEL_POS.x, END_BUTTON_NEXT_LEVEL_POS.y, 0, 0, &nextlevel_trigger, NULL, NULL);
+        if (Is_There_A_Next_Level())
+        {
+            CreateButton_Rectangle(END_BUTTON_NEXT_LEVEL_TEXT, END_BUTTON_NEXT_LEVEL_TEXT_SIZE, END_BUTTON_NEXT_LEVEL_TEXT_COLOR, END_BUTTON_NEXT_LEVEL_SIZE.x, END_BUTTON_NEXT_LEVEL_SIZE.y, END_BUTTON_NEXT_LEVEL_COLOR, END_BUTTON_NEXT_LEVEL_POS.x, END_BUTTON_NEXT_LEVEL_POS.y, 0, 0, &nextlevel_trigger, NULL, NULL);
+        } else {
+        CreateText("YOU FINISHED THE GAME!", 24, GREEN, END_BUTTON_NEXT_LEVEL_POS.x, END_BUTTON_NEXT_LEVEL_POS.y, 0, 0);
+        }
     }
 
     CreateButton_Rectangle(END_BUTTON_TRY_AGAIN_TEXT, END_BUTTON_TRY_AGAIN_TEXT_SIZE, END_BUTTON_TRY_AGAIN_TEXT_COLOR, END_BUTTON_TRY_AGAIN_SIZE.x, END_BUTTON_TRY_AGAIN_SIZE.y, END_BUTTON_TRY_AGAIN_COLOR, END_BUTTON_TRY_AGAIN_POS.x, END_BUTTON_TRY_AGAIN_POS.y, 0, 0, &tryagain_trigger, NULL, NULL);
@@ -640,6 +645,13 @@ void ShowEnd(GameScreen *current_game_screen)
     {
         *current_game_screen = MAIN_MENU_SCREEN;
         Reset_Gameplay();
+        return;
+    } else if(tryagain_trigger){
+        Reset_Gameplay();
+        return;
+    } else if(nextlevel_trigger){
+        Reset_Gameplay();
+        Load_Level(Get_Loaded_Level_Index()+1);
         return;
     }
 }
