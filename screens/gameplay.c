@@ -276,7 +276,7 @@ void Initialize_Level()
 
     end_of_update_cycle = obj_length;
 
-    screen_info = GAMEPLAY_GAME;
+    screen_info = GAMEPLAY_WARNING;
 }
 
 void EndLevel()
