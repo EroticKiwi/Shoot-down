@@ -119,6 +119,8 @@ int last_active_score_text = -1;
 PhysicsObject *objs;
 int obj_length;
 int last_occupied_slot;
+int start_index;
+int end_of_update_cycle;
 
 /* stats */
 int current_wave;
@@ -157,6 +159,12 @@ void Reset_Gameplay()
     new_highscore = false;
     screen_info = GAMEPLAY_WARNING;
 
+    nextlevel_trigger = false;
+    tryagain_trigger = false;
+    levelselect_trigger = false;
+
+    end_of_update_cycle = 1;
+
     has_initialized_level = false;
 }
 
@@ -168,21 +176,17 @@ void Activate_Wave(PhysicsObject *objs, int obj_length, int wave_to_activate)
         return;
     }
 
-    int start = level.waves_starting_points[wave_to_activate];
-    int stop;
+    int start_index = level.waves_starting_points[wave_to_activate];
+    int end;
 
-    if (wave_to_activate == level.waves - 1)
-    {
-        stop = obj_length;
-    }
-    else
-    {
-        stop = level.waves_starting_points[wave_to_activate + 1];
+    if(current_wave < level.waves - 1){
+        end = level.waves_starting_points[current_wave+1] - level.waves_starting_points[current_wave];
+    } else {
+        end = level.phys_objs_to_throw - level.waves_starting_points[current_wave];
     }
 
-    for (int i = start; i < stop; i++)
-    {
-        objs[i].active = true;
+    for(int i = 0; i < end; i++){
+        objs[i+start_index].active = true;
     }
 
     current_wave = wave_to_activate;
@@ -233,7 +237,7 @@ void Initialize_Level()
     bool isActive;
 
     // 2. Cycle and assign
-    for (int i = 0; i < level.phys_objs_to_throw; i++)
+    for (int i = 0; i < obj_length; i++)
     {
         origin = (Vector2){RandomNumberInRange_Inclusive(level.min_spawn_pos.x, level.max_spawn_pos.x), RandomNumberInRange_Inclusive(level.min_spawn_pos.y, level.max_spawn_pos.y)};
         gravity_multiplier = (Vector2){RandomNumberInRange_Inclusive(level.min_gravity_multiplier.x, level.max_gravity_multiplier.x), RandomNumberInRange_Inclusive(level.min_gravity_multiplier.y, level.max_gravity_multiplier.y)};
@@ -269,6 +273,10 @@ void Initialize_Level()
     has_initialized_level = true;
 
     current_score = 0;
+
+    end_of_update_cycle = obj_length;
+
+    screen_info = GAMEPLAY_GAME;
 }
 
 void EndLevel()
@@ -318,10 +326,12 @@ void Create_Score_Text(Vector2 origin, bool destroyed_crate)
     if (destroyed_crate)
     {
         points = POINTS_FOR_CRATES_DESTRUCTION;
+        CreateSound(SOUND_DESTROY);
     }
     else
     {
         points = POINTS_FOR_DEBRIS_DESTRUCTION;
+        CreateSound(SOUND_DEBRIS);
     }
 
     for (int i = start; i < score_text_length; i++)
@@ -430,7 +440,11 @@ void UpdateCrates()
 
     int amount_of_inactive_objs = 0;
 
-    for (int i = level.waves_starting_points[current_wave]; i < obj_length; i++)
+    //printf("\nstart: %d\n", level.waves_starting_points[current_wave]);
+    //printf("\nend: %d\n", end_of_update_cycle);
+    //printf("\ncycles needed: %d\n", end_of_update_cycle - level.waves_starting_points[current_wave]);
+
+    for (int i = level.waves_starting_points[current_wave]; i < end_of_update_cycle; i++)
     {
         if (!objs[i].active)
         {
@@ -456,15 +470,19 @@ void UpdateCrates()
         }
     }
 
+    // printf("\ninactive objs: %d\n", amount_of_inactive_objs);
+
     UpdateColliders(objs, obj_length);
 
     Update_Score_Text();
 
+    //printf("\ninactive_objs: %d\n", amount_of_inactive_objs);
+    //printf("\ntotalobjs: %d\n", obj_length);
+
     /* Check end of wave */
-    int end = obj_length - level.waves_starting_points[current_wave];
-    if (amount_of_inactive_objs >= end)
+    if (amount_of_inactive_objs >= end_of_update_cycle - level.waves_starting_points[current_wave])
     {
-        // printf("\nend of wave!\n");
+        //printf("\nend of wave!\n");
         if (current_wave == level.waves - 1)
         {
             EndLevel();
@@ -490,6 +508,7 @@ void ShowEnd(GameScreen *current_game_screen)
         UpdateTimer_Tickdown(&timer);
         if (Is_Timer_Done(&timer))
         {
+            CreateSound(SOUND_APPEAR);
             end_text_0_appeared = true;
             Set_Timer(&timer, END_WAIT_TIME, 0.0f);
         }
@@ -510,6 +529,7 @@ void ShowEnd(GameScreen *current_game_screen)
         UpdateTimer_Tickdown(&timer);
         if (Is_Timer_Done(&timer))
         {
+            CreateSound(SOUND_APPEAR);
             end_text_1_appeared = true;
             Set_Timer(&timer, END_WAIT_TIME, 0.0f);
         }
@@ -524,6 +544,7 @@ void ShowEnd(GameScreen *current_game_screen)
         UpdateTimer_Tickdown(&timer);
         if (Is_Timer_Done(&timer))
         {
+            CreateSound(SOUND_APPEAR);
             end_text_2_appeared = true;
             Set_Timer(&timer, END_WAIT_TIME, 0.0f);
             score_count_animation = 0;
@@ -543,6 +564,7 @@ void ShowEnd(GameScreen *current_game_screen)
             return;
         }
         score_count_animation += 2;
+        CreateSound(SOUND_COUNT);
         if (score_count_animation >= current_score)
         {
             score_count_animation = current_score;
@@ -619,6 +641,7 @@ void ShowEnd(GameScreen *current_game_screen)
         UpdateTimer_Tickdown(&timer);
         if (Is_Timer_Done(&timer))
         {
+            CreateSound(SOUND_APPEAR);
             end_buttons_appeared = true;
         }
         return;
@@ -633,8 +656,10 @@ void ShowEnd(GameScreen *current_game_screen)
         if (Is_There_A_Next_Level())
         {
             CreateButton_Rectangle(END_BUTTON_NEXT_LEVEL_TEXT, END_BUTTON_NEXT_LEVEL_TEXT_SIZE, END_BUTTON_NEXT_LEVEL_TEXT_COLOR, END_BUTTON_NEXT_LEVEL_SIZE.x, END_BUTTON_NEXT_LEVEL_SIZE.y, END_BUTTON_NEXT_LEVEL_COLOR, END_BUTTON_NEXT_LEVEL_POS.x, END_BUTTON_NEXT_LEVEL_POS.y, 0, 0, &nextlevel_trigger, NULL, NULL);
-        } else {
-        CreateText("YOU FINISHED THE GAME!", 24, GREEN, END_BUTTON_NEXT_LEVEL_POS.x, END_BUTTON_NEXT_LEVEL_POS.y, 0, 0);
+        }
+        else
+        {
+            CreateText("YOU FINISHED THE GAME!", 24, GREEN, END_BUTTON_NEXT_LEVEL_POS.x, END_BUTTON_NEXT_LEVEL_POS.y, 0, 0);
         }
     }
 
@@ -646,12 +671,17 @@ void ShowEnd(GameScreen *current_game_screen)
         *current_game_screen = MAIN_MENU_SCREEN;
         Reset_Gameplay();
         return;
-    } else if(tryagain_trigger){
+    }
+    else if (tryagain_trigger)
+    {
         Reset_Gameplay();
         return;
-    } else if(nextlevel_trigger){
+    }
+    else if (nextlevel_trigger)
+    {
         Reset_Gameplay();
-        Load_Level(Get_Loaded_Level_Index()+1);
+        Reload_Level_Data();
+        Load_Next_Level();
         return;
     }
 }

@@ -42,6 +42,10 @@ void UnloadGameMusic()
 void LoadGameSounds()
 {
     gameSounds[SOUND_BEEP] = LoadSound("assets/sfx/beep.wav");
+    gameSounds[SOUND_COUNT] = LoadSound("assets/sfx/count.wav");
+    gameSounds[SOUND_APPEAR] = LoadSound("assets/sfx/appear.wav");
+    gameSounds[SOUND_DESTROY] = LoadSound("assets/sfx/destroy.wav");
+    gameSounds[SOUND_DEBRIS] = LoadSound("assets/sfx/debris.wav");
     LoadGameMusic();
 }
 

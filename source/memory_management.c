@@ -22,6 +22,15 @@ void *Memory_Create(void *arr, int length, size_t size_of_array_content)
     return ptr;
 }
 
+void Memory_Free(void *arr){
+    if(arr == NULL){
+        printf("\nwi\n");
+        return;
+    }
+
+    free(arr);
+}
+
 void *Memory_Expand(void *arr, int length, int amount, size_t size_of_array_content)
 {
 

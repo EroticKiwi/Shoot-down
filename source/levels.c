@@ -100,11 +100,11 @@ void Initialize_SingleLevel(Level *level, int index)
         Create_Level(level, min_gravity_multiplier, max_gravity_multiplier, min_spawn_pos, max_spawn_pos, minPoints, waves, waves_starting_points, phys_objs_to_throw);
         break;
     case 3:
-        min_spawn_pos = (Vector2){100.0f, 100.0f};
-        max_spawn_pos = (Vector2){screenW - 50.0f, screenH - 400.0f};
+        min_spawn_pos = (Vector2){100.0f, CRATE_HEIGHT};
+        max_spawn_pos = (Vector2){screenW - 50.0f, 100.0f};
         min_gravity_multiplier = (Vector2){0.0f, -20.0f};
         max_gravity_multiplier = (Vector2){0.0f, -20.0f};
-        minPoints = 400;
+        minPoints = 325;
         phys_objs_to_throw = 10;
 
         waves = 2;
@@ -153,12 +153,13 @@ void Initialize_SingleLevel(Level *level, int index)
         min_gravity_multiplier = (Vector2){2000.0f, 0.0f};
         max_gravity_multiplier = (Vector2){2000.0f, 0.0f};
         minPoints = 50;
-        phys_objs_to_throw = 1;
+        phys_objs_to_throw = 2;
 
-        waves = 1;
+        waves = 2;
         waves_starting_points = Memory_Resize(waves_starting_points, waves, sizeof(int));
 
         waves_starting_points[0] = 0;
+        waves_starting_points[1] = 1;
 
         Create_Level(level, min_gravity_multiplier, max_gravity_multiplier, min_spawn_pos, max_spawn_pos, minPoints, waves, waves_starting_points, phys_objs_to_throw);
         break;
@@ -288,6 +289,14 @@ void Load_Level(int index)
     loaded_level = index;
 }
 
+void Load_Next_Level(){
+    if(loaded_level >= TOTAL_LEVELS - 1){
+        return;
+    }
+
+    Load_Level(loaded_level + 1);
+}
+
 bool Is_There_A_Next_Level()
 {
     if (loaded_level >= TOTAL_LEVELS - 1)
@@ -325,7 +334,7 @@ void Save_Levels_Data()
         max_level += 1;
     }
 
-    if (max_level < TOTAL_LEVELS - 1)
+    if (max_level <= TOTAL_LEVELS - 1)
     {
         levels[max_level].locked = false;
     }

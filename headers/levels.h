@@ -17,6 +17,7 @@ Level Get_Level(int index);
 Level Get_Loaded_Level();
 int Get_Loaded_Level_Index();
 void Load_Level(int index);
+void Load_Next_Level();
 bool Is_There_A_Next_Level();
 void Reset_Loaded_Level();
 int Get_Max_Level_Reached();

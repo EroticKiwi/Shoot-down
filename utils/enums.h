@@ -33,7 +33,11 @@ typedef enum GameSprite{
 } GameSprite;
 
 typedef enum GameSound{
-    SOUND_BEEP
+    SOUND_BEEP,
+    SOUND_COUNT,
+    SOUND_APPEAR,
+    SOUND_DESTROY,
+    SOUND_DEBRIS
 } GameSound;
 
 typedef enum GameMusic{

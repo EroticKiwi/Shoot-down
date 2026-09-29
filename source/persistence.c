@@ -61,7 +61,6 @@ void Load_From_File(char path[], int *max_level_reached, Level *levels, int leve
 
 void SaveData_ToFile(int max_level_reached, const Level levels[])
 {
-
     char dir[512];
 
 #ifdef _WIN32
